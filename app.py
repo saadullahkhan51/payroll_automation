@@ -25,6 +25,7 @@ for directory in ['payslips', 'monthly', 'annual', 'tax_forms']:
     (OUTPUT_DIR / directory).mkdir(parents=True, exist_ok=True)
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
+search_dirs = [OUTPUT_DIR / 'payslips', OUTPUT_DIR / 'monthly', OUTPUT_DIR / 'annual', OUTPUT_DIR / 'personal_tax', OUTPUT_DIR / 'tax_forms']
 
 init_db()
 
@@ -32,7 +33,7 @@ def get_generation_history():
     """Get list of all generated files with metadata"""
     history = []
     
-    for directory in [OUTPUT_DIR / 'payslips', OUTPUT_DIR / 'monthly', OUTPUT_DIR / 'annual', OUTPUT_DIR / 'tax_forms']:
+    for directory in search_dirs:
         if directory.exists():
             for file in directory.glob('*.xlsx'):
                 stat = file.stat()
@@ -308,7 +309,7 @@ def generate_all_reports():
 def download_file(filename):
     """Download a generated file"""
     # Search in all output directories
-    for directory in [OUTPUT_DIR / 'payslips', OUTPUT_DIR / 'monthly', OUTPUT_DIR / 'annual', OUTPUT_DIR / 'personal_tax']:
+    for directory in search_dirs:
         filepath = directory / filename
         if filepath.exists():
             return send_file(filepath, as_attachment=True)
@@ -318,7 +319,7 @@ def download_file(filename):
 @app.route('/api/delete/<path:filename>', methods=['DELETE'])
 def delete_file(filename):
     """Delete a generated file"""
-    for directory in [OUTPUT_DIR / 'payslips', OUTPUT_DIR / 'monthly', OUTPUT_DIR / 'annual']:
+    for directory in search_dirs:
         filepath = directory / filename
         if filepath.exists():
             filepath.unlink()
