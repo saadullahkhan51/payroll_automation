@@ -105,7 +105,7 @@ class PersonalTaxCalculator:
 
         for record in sorted(records, key=lambda r: (r.pay_period_start)):
             # Format period
-            period_start = f"{record.pay_period_start.strftime('%d')}"
+            period = f"{record.pay_period_start.strftime('%d.%m.%Y')}"
             period_end = f"{record.pay_period_end.strftime('%d.%m.%Y')}"
 
             # Calculate Swedish calculation number (arbitrary format like "93800")
@@ -127,7 +127,7 @@ class PersonalTaxCalculator:
             tax_allowances_eur = allowances_eur * Decimal('0.30')
             
             # Write data
-            ws[f'A{row}'] = f"{period_start}.-{period_end}"
+            ws[f'A{row}'] = period
             ws[f'B{row}'] = calc_num
             ws[f'C{row}'] = float(taxable_income_sek)
             ws[f'D{row}'] = float(taxable_income_eur)
