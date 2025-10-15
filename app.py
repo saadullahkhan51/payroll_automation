@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, jsonify, send_file, redirect, url_for
 from pathlib import Path
-import sys
+import sys, os
 from datetime import datetime, date
 import json
 
@@ -14,11 +14,17 @@ from processors.annual_summary_generator import AnnualSummaryGenerator
 from database.db import init_db, SessionLocal
 from database.repository import PayrollRepository
 from models.employee import Employee
-from config.settings import OUTPUT_DIR, SECRET_KEY
+from config.settings import OUTPUT_DIR, SECRET_KEY, DATA_DIR
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = SECRET_KEY
+app.config['DEBUG'] = os.getenv('DEBUG', 'False').lower() == 'true'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+
+for directory in ['payslips', 'monthly', 'annual', 'tax_forms']:
+    (OUTPUT_DIR / directory).mkdir(parents=True, exist_ok=True)
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+
 
 init_db()
 
@@ -26,7 +32,7 @@ def get_generation_history():
     """Get list of all generated files with metadata"""
     history = []
     
-    for directory in [OUTPUT_DIR / 'payslips', OUTPUT_DIR / 'monthly', OUTPUT_DIR / 'annual']:
+    for directory in [OUTPUT_DIR / 'payslips', OUTPUT_DIR / 'monthly', OUTPUT_DIR / 'annual', OUTPUT_DIR / 'tax_forms']:
         if directory.exists():
             for file in directory.glob('*.xlsx'):
                 stat = file.stat()
@@ -302,7 +308,7 @@ def generate_all_reports():
 def download_file(filename):
     """Download a generated file"""
     # Search in all output directories
-    for directory in [OUTPUT_DIR / 'payslips', OUTPUT_DIR / 'monthly', OUTPUT_DIR / 'annual']:
+    for directory in [OUTPUT_DIR / 'payslips', OUTPUT_DIR / 'monthly', OUTPUT_DIR / 'annual', OUTPUT_DIR / 'tax_forms']:
         filepath = directory / filename
         if filepath.exists():
             return send_file(filepath, as_attachment=True)
@@ -529,9 +535,6 @@ def get_submissions():
     db.close()
     return jsonify(result)
 
-# ============================================================================
-# Run Application
-# ============================================================================
-
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    port = int(os.getenv('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=app.config['DEBUG'])
