@@ -12,7 +12,7 @@
     <div class="col-md-6">
         <div class="card">
             <div class="card-header bg-primary text-white">
-                <h5><i class="fas fa-calendar-alt"></i> Select Period</h5>
+                <h5><i class="fas fa-calendar-alt"></i> Select Period & Employee</h5>
             </div>
             <div class="card-body">
                 <div class="mb-3">
@@ -40,6 +40,15 @@
                         <option value="12">December</option>
                     </select>
                 </div>
+                <div class="mb-3">
+                    <label for="employee" class="form-label">
+                        <i class="fas fa-user"></i> Employee (for individual reports)
+                    </label>
+                    <select class="form-select" id="employee">
+                        <option value="all" selected>All Employees</option>
+                    </select>
+                    <small class="text-muted">Select specific employee for payslips or personal tax calculations</small>
+                </div>
             </div>
         </div>
     </div>
@@ -52,19 +61,46 @@
             <div class="card-body">
                 <div class="list-group">
                     <button class="list-group-item list-group-item-action" onclick="generateReport('payslips')">
-                        <i class="fas fa-file-invoice"></i> Individual Payslips
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-file-invoice"></i> Individual Payslips</span>
+                            <span class="badge bg-info" id="payslips-badge">All</span>
+                        </div>
+                        <small class="text-muted d-block mt-1">Generate payslip(s) for selected employee</small>
+                    </button>
+                    <button class="list-group-item list-group-item-action" onclick="generateReport('monthly-summary')">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-table"></i> Monthly Summary</span>
+                            <span class="badge bg-secondary">All</span>
+                        </div>
+                        <small class="text-muted d-block mt-1">Summary of all employees</small>
                     </button>
                     <button class="list-group-item list-group-item-action" onclick="generateReport('monthly-all-workers')">
-                        <i class="fas fa-users"></i> Monthly All Workers Salary Info
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-users"></i> Monthly All Workers</span>
+                            <span class="badge bg-secondary">All</span>
+                        </div>
+                        <small class="text-muted d-block mt-1">Detailed report for tax submission</small>
                     </button>
                     <button class="list-group-item list-group-item-action" onclick="generateReport('personal-tax')">
-                        <i class="fas fa-calculator"></i> Personal Tax Calculations
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-calculator"></i> Personal Tax Calculations</span>
+                            <span class="badge bg-info" id="personal-tax-badge">All</span>
+                        </div>
+                        <small class="text-muted d-block mt-1">Annual tax calculation for selected employee</small>
                     </button>
                     <button class="list-group-item list-group-item-action" onclick="generateReport('annual-summary')">
-                        <i class="fas fa-chart-bar"></i> Annual Summary
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-chart-bar"></i> Annual Summary</span>
+                            <span class="badge bg-secondary">All</span>
+                        </div>
+                        <small class="text-muted d-block mt-1">Annual summary for all employees</small>
                     </button>
                     <button class="list-group-item list-group-item-action list-group-item-primary" onclick="generateReport('all')">
-                        <i class="fas fa-rocket"></i> <strong>Generate All Reports</strong>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-rocket"></i> <strong>Generate All Reports</strong></span>
+                            <span class="badge bg-warning text-dark">All</span>
+                        </div>
+                        <small class="text-muted d-block mt-1">Generate all available reports</small>
                     </button>
                 </div>
             </div>
@@ -117,19 +153,82 @@
 
 <script>
 let generatedFiles = [];
+let employees = [];
+
+// Load employees on page load
+function loadEmployees() {
+    fetch('/api/employees')
+    .then(response => response.json())
+    .then(data => {
+        employees = data;
+        const select = document.getElementById('employee');
+        
+        // Clear existing options except "All Employees"
+        select.innerHTML = '<option value="all" selected>All Employees</option>';
+        
+        // Add employees
+        data.forEach(emp => {
+            const option = document.createElement('option');
+            option.value = emp.employee_id;
+            option.textContent = `${emp.name} (${emp.employee_id})`;
+            select.appendChild(option);
+        });
+        
+        console.log(`Loaded ${data.length} employees`);
+    })
+    .catch(error => {
+        console.error('Error loading employees:', error);
+    });
+}
+
+// Update badges when employee selection changes
+document.addEventListener('DOMContentLoaded', function() {
+    loadEmployees();
+    
+    document.getElementById('employee').addEventListener('change', function() {
+        const selected = this.value;
+        const selectedName = this.options[this.selectedIndex].text;
+        
+        // Update badges for individual reports
+        const payslipsBadge = document.getElementById('payslips-badge');
+        const personalTaxBadge = document.getElementById('personal-tax-badge');
+        
+        if (selected === 'all') {
+            payslipsBadge.textContent = 'All';
+            payslipsBadge.className = 'badge bg-info';
+            personalTaxBadge.textContent = 'All';
+            personalTaxBadge.className = 'badge bg-info';
+        } else {
+            const name = selectedName.split(' (')[0];
+            payslipsBadge.textContent = name;
+            payslipsBadge.className = 'badge bg-success';
+            personalTaxBadge.textContent = name;
+            personalTaxBadge.className = 'badge bg-success';
+        }
+    });
+});
 
 function generateReport(type) {
     const year = document.getElementById('year').value;
     const month = document.getElementById('month').value;
+    const employeeId = document.getElementById('employee').value;
     
     const statusAlert = document.getElementById('status-alert');
     const resultAlert = document.getElementById('result-alert');
     const statusMessage = document.getElementById('status-message');
     
+    // Determine message based on selection
+    let message = `Generating ${type.replace('-', ' ')}`;
+    if (employeeId !== 'all') {
+        const empName = document.getElementById('employee').options[document.getElementById('employee').selectedIndex].text.split(' (')[0];
+        message += ` for ${empName}`;
+    }
+    message += '...';
+    
     // Show loading
     statusAlert.style.display = 'block';
     resultAlert.style.display = 'none';
-    statusMessage.textContent = `Generating ${type.replace('-', ' ')}...`;
+    statusMessage.textContent = message;
     
     // Make API request
     fetch(`/api/generate/${type}`, {
@@ -137,7 +236,11 @@ function generateReport(type) {
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ year, month, employee_id: 'all' })
+        body: JSON.stringify({ 
+            year: year, 
+            month: month, 
+            employee_id: employeeId 
+        })
     })
     .then(response => response.json())
     .then(data => {
@@ -257,6 +360,10 @@ style.textContent = `
     
     #generated-files-list tr:hover {
         background-color: #f8f9fa;
+    }
+    
+    .list-group-item small {
+        font-size: 0.85rem;
     }
 `;
 document.head.appendChild(style);
