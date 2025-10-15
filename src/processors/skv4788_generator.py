@@ -2,7 +2,7 @@ import xml.etree.ElementTree as ET
 from xml.dom import minidom
 from pathlib import Path
 from decimal import Decimal
-from ..models.payroll import PayrollRecord
+from models.payroll import PayrollRecord
 from config.settings import OUTPUT_DIR
 
 class SKV4788Generator:

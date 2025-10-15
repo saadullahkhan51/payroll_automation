@@ -21,7 +21,7 @@ app.config['SECRET_KEY'] = SECRET_KEY
 app.config['DEBUG'] = os.getenv('DEBUG', 'False').lower() == 'true'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 
-for directory in ['payslips', 'monthly', 'annual', 'tax_forms']:
+for directory in ['payslips', 'monthly', 'annual', 'personal_tax', 'tax_forms']:
     (OUTPUT_DIR / directory).mkdir(parents=True, exist_ok=True)
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 

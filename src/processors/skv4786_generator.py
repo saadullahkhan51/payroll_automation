@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import List
 from decimal import Decimal
 from datetime import date
-from ..models.payroll import PayrollRecord
+from models.payroll import PayrollRecord
 from config.settings import OUTPUT_DIR
 
 class SKV4786Generator:
