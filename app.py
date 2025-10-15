@@ -308,7 +308,7 @@ def generate_all_reports():
 def download_file(filename):
     """Download a generated file"""
     # Search in all output directories
-    for directory in [OUTPUT_DIR / 'payslips', OUTPUT_DIR / 'monthly', OUTPUT_DIR / 'annual', OUTPUT_DIR / 'tax_forms']:
+    for directory in [OUTPUT_DIR / 'payslips', OUTPUT_DIR / 'monthly', OUTPUT_DIR / 'annual', OUTPUT_DIR / 'personal_tax']:
         filepath = directory / filename
         if filepath.exists():
             return send_file(filepath, as_attachment=True)
