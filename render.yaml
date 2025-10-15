@@ -1,0 +1,24 @@
+services:
+  # Web Service
+  - type: web
+    name: payroll-automation
+    env: python
+    region: frankfurt  # Choose closest to you: oregon, frankfurt, singapore
+    plan: free  # or starter ($7/month) for better performance
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn app:app"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.18
+      - key: SECRET_KEY
+        generateValue: true
+      - key: FLASK_ENV
+        value: production
+      - key: DEBUG
+        value: false
+    
+    # Persistent disk for SQLite database and output files
+    disk:
+      name: payroll-data
+      mountPath: /opt/render/project/src/data
+      sizeGB: 1
