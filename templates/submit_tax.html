@@ -1,0 +1,358 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h2><i class="fas fa-paper-plane"></i> Submit to Swedish Tax Authority</h2>
+        <p class="text-muted">Generate and submit SKV forms to Skatteverket</p>
+    </div>
+</div>
+
+<!-- Alert for Skatteverket links -->
+<div class="row mt-3">
+    <div class="col-md-12">
+        <div class="alert alert-info">
+            <h5><i class="fas fa-info-circle"></i> Swedish Tax Authority Forms</h5>
+            <p class="mb-2">This system generates the following forms for Skatteverket:</p>
+            <ul class="mb-0">
+                <li><strong>SKV 4788:</strong> Individual monthly payments for each employee 
+                    <a href="https://www.skatteverket.se/foretag/etjansterochblanketter/blanketterbroschyrer/blanketter/info/4788en.4.1df9c71e181083ce6f62ae.html?q=4788" target="_blank">
+                        <i class="fas fa-external-link-alt"></i> View form info
+                    </a>
+                </li>
+                <li><strong>SKV 4786:</strong> Combined monthly payments for all workers 
+                    <a href="https://www.skatteverket.se/foretag/etjansterochblanketter/blanketterbroschyrer/blanketter/info/4786en.4.4f45da1418092e4b1922c98.html" target="_blank">
+                        <i class="fas fa-external-link-alt"></i> View form info
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Period Selection -->
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5><i class="fas fa-calendar-alt"></i> Select Period</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="year" class="form-label">Year</label>
+                    <select class="form-select" id="year">
+                        <option value="2025" selected>2025</option>
+                        <option value="2024">2024</option>
+                        <option value="2023">2023</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="month" class="form-label">Month</label>
+                    <select class="form-select" id="month">
+                        <option value="1">January</option>
+                        <option value="2">February</option>
+                        <option value="3">March</option>
+                        <option value="4">April</option>
+                        <option value="5">May</option>
+                        <option value="6">June</option>
+                        <option value="7">July</option>
+                        <option value="8" selected>August</option>
+                        <option value="9">September</option>
+                        <option value="10">October</option>
+                        <option value="11">November</option>
+                        <option value="12">December</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form Generation -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5><i class="fas fa-file-alt"></i> Step 1: Generate Forms</h5>
+            </div>
+            <div class="card-body">
+                <p>Generate the Swedish tax forms before submission:</p>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-primary btn-lg" onclick="generateForms('skv4788')">
+                        <i class="fas fa-file-invoice"></i> Generate SKV 4788 (Individual Forms)
+                    </button>
+                    <button class="btn btn-outline-success btn-lg" onclick="generateForms('skv4786')">
+                        <i class="fas fa-users"></i> Generate SKV 4786 (Combined Form)
+                    </button>
+                    <button class="btn btn-primary btn-lg" onclick="generateAllForms()">
+                        <i class="fas fa-bolt"></i> Generate Both Forms
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Status Messages -->
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div id="status-alert" class="alert alert-info" style="display: none;">
+            <div class="d-flex align-items-center">
+                <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                <span id="status-message">Processing...</span>
+            </div>
+        </div>
+        <div id="result-alert" class="alert" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Generated Forms -->
+<div class="row mt-4" id="forms-section" style="display: none;">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h5><i class="fas fa-check-circle"></i> Step 2: Review & Submit Forms</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <!-- SKV 4788 Forms -->
+                    <div class="col-md-6" id="skv4788-section" style="display: none;">
+                        <h6><i class="fas fa-file-invoice"></i> SKV 4788 - Individual Forms</h6>
+                        <div class="list-group mb-3" id="skv4788-list">
+                        </div>
+                        <button class="btn btn-success w-100" onclick="submitForms('skv4788')">
+                            <i class="fas fa-paper-plane"></i> Submit to Skatteverket
+                        </button>
+                    </div>
+
+                    <!-- SKV 4786 Form -->
+                    <div class="col-md-6" id="skv4786-section" style="display: none;">
+                        <h6><i class="fas fa-users"></i> SKV 4786 - Combined Form</h6>
+                        <div class="list-group mb-3" id="skv4786-list">
+                        </div>
+                        <button class="btn btn-success w-100" onclick="submitForms('skv4786')">
+                            <i class="fas fa-paper-plane"></i> Submit to Skatteverket
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Submission History -->
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5><i class="fas fa-history"></i> Submission History</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Form Type</th>
+                                <th>Period</th>
+                                <th>Employee</th>
+                                <th>Status</th>
+                                <th>Reference</th>
+                                <th>Submitted</th>
+                            </tr>
+                        </thead>
+                        <tbody id="submission-history">
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">No submissions yet</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let skv4788Files = [];
+let skv4786File = null;
+
+function generateForms(type) {
+    const year = document.getElementById('year').value;
+    const month = document.getElementById('month').value;
+    
+    showStatus(`Generating ${type.toUpperCase()} forms...`);
+    
+    fetch(`/api/generate/${type}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ year, month })
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideStatus();
+        
+        if (data.success) {
+            showResult(data.message, 'success');
+            
+            if (type === 'skv4788' && data.files) {
+                skv4788Files = data.files;
+                displaySKV4788Forms(data.files);
+            } else if (type === 'skv4786' && data.file) {
+                skv4786File = data.file;
+                displaySKV4786Form(data.file);
+            }
+            
+            document.getElementById('forms-section').style.display = 'block';
+        } else {
+            showResult(`Error: ${data.message}`, 'danger');
+        }
+    })
+    .catch(error => {
+        hideStatus();
+        showResult(`Error: ${error}`, 'danger');
+    });
+}
+
+function generateAllForms() {
+    generateForms('skv4788');
+    setTimeout(() => generateForms('skv4786'), 1000);
+}
+
+function displaySKV4788Forms(files) {
+    const list = document.getElementById('skv4788-list');
+    list.innerHTML = '';
+    
+    files.forEach(file => {
+        const item = document.createElement('div');
+        item.className = 'list-group-item d-flex justify-content-between align-items-center';
+        item.innerHTML = `
+            <span><i class="fas fa-file-code text-primary"></i> ${file}</span>
+            <a href="/api/download/${file}" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-download"></i>
+            </a>
+        `;
+        list.appendChild(item);
+    });
+    
+    document.getElementById('skv4788-section').style.display = 'block';
+}
+
+function displaySKV4786Form(file) {
+    const list = document.getElementById('skv4786-list');
+    list.innerHTML = `
+        <div class="list-group-item d-flex justify-content-between align-items-center">
+            <span><i class="fas fa-file-code text-success"></i> ${file}</span>
+            <a href="/api/download/${file}" class="btn btn-sm btn-outline-success">
+                <i class="fas fa-download"></i>
+            </a>
+        </div>
+    `;
+    
+    document.getElementById('skv4786-section').style.display = 'block';
+}
+
+function submitForms(type) {
+    if (type === 'skv4788' && skv4788Files.length === 0) {
+        alert('Please generate SKV 4788 forms first');
+        return;
+    }
+    
+    if (type === 'skv4786' && !skv4786File) {
+        alert('Please generate SKV 4786 form first');
+        return;
+    }
+    
+    showStatus(`Submitting to Skatteverket...`);
+    
+    const payload = type === 'skv4788' 
+        ? { files: skv4788Files }
+        : { file: skv4786File };
+    
+    fetch(`/api/submit/${type}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideStatus();
+        
+        if (data.success) {
+            showResult(data.message, 'success');
+            
+            if (data.reference) {
+                showResult(`Reference Number: ${data.reference}`, 'info');
+            }
+            
+            if (data.payment_info) {
+                showResult(
+                    `Payment Due: ${data.payment_info.amount} by ${data.payment_info.due_date}<br>` +
+                    `OCR Reference: ${data.payment_info.ocr}`,
+                    'warning'
+                );
+            }
+            
+            // Refresh submission history
+            loadSubmissionHistory();
+        } else {
+            showResult(`Error: ${data.message}`, 'danger');
+        }
+    })
+    .catch(error => {
+        hideStatus();
+        showResult(`Error: ${error}`, 'danger');
+    });
+}
+
+function loadSubmissionHistory() {
+    fetch('/api/submissions')
+    .then(response => response.json())
+    .then(submissions => {
+        const tbody = document.getElementById('submission-history');
+        
+        if (submissions.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No submissions yet</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = '';
+        submissions.forEach(sub => {
+            const statusBadge = {
+                'submitted': 'bg-success',
+                'pending': 'bg-warning',
+                'accepted': 'bg-primary',
+                'rejected': 'bg-danger'
+            }[sub.status] || 'bg-secondary';
+            
+            const row = tbody.insertRow();
+            row.innerHTML = `
+                <td><span class="badge bg-info">${sub.form_type}</span></td>
+                <td>${sub.year}-${String(sub.month).padStart(2, '0')}</td>
+                <td>${sub.employee_id || 'All employees'}</td>
+                <td><span class="badge ${statusBadge}">${sub.status}</span></td>
+                <td><code>${sub.reference || '-'}</code></td>
+                <td>${sub.submitted_at || '-'}</td>
+            `;
+        });
+    });
+}
+
+function showStatus(message) {
+    document.getElementById('status-message').textContent = message;
+    document.getElementById('status-alert').style.display = 'block';
+    document.getElementById('result-alert').style.display = 'none';
+}
+
+function hideStatus() {
+    document.getElementById('status-alert').style.display = 'none';
+}
+
+function showResult(message, type) {
+    const alert = document.getElementById('result-alert');
+    alert.className = `alert alert-${type}`;
+    alert.innerHTML = `<i class="fas fa-${type === 'success' ? 'check' : 'exclamation'}-circle"></i> ${message}`;
+    alert.style.display = 'block';
+}
+
+// Load submission history on page load
+loadSubmissionHistory();
+</script>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h2><i class="fas fa-cog"></i> Settings</h2>
+        <p class="text-muted">Configure system settings</p>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Exchange Rates</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">SEK to EUR</label>
+                    <input type="number" class="form-control" value="0.086" step="0.001">
+                </div>
+                <button class="btn btn-primary">Save</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Company Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Company Name</label>
+                    <input type="text" class="form-control" value="Asiakasyritys Oy">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Address</label>
+                    <input type="text" class="form-control" value="Meritullentie 12, 02110 Espoo">
+                </div>
+                <button class="btn btn-primary">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Tax Rates</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Swedish Tax Rate (%)</label>
+                    <input type="number" class="form-control" value="30" min="0" max="100">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Finnish Base Tax Rate (%)</label>
+                    <input type="number" class="form-control" value="16.5" min="0" max="100" step="0.1">
+                </div>
+                <button class="btn btn-primary">Save</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Database</h5>
+            </div>
+            <div class="card-body">
+                <p>Database location: <code>data/payroll.db</code></p>
+                <button class="btn btn-warning">Backup Database</button>
+                <button class="btn btn-danger">Clear Database</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h2><i class="fas fa-file-export"></i> Generate Reports</h2>
+        <p class="text-muted">Select the type of report and period to generate</p>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5><i class="fas fa-calendar-alt"></i> Select Period</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="year" class="form-label">Year</label>
+                    <select class="form-select" id="year">
+                        <option value="2025" selected>2025</option>
+                        <option value="2024">2024</option>
+                        <option value="2023">2023</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="month" class="form-label">Month</label>
+                    <select class="form-select" id="month">
+                        <option value="1">January</option>
+                        <option value="2">February</option>
+                        <option value="3">March</option>
+                        <option value="4">April</option>
+                        <option value="5">May</option>
+                        <option value="6">June</option>
+                        <option value="7">July</option>
+                        <option value="8" selected>August</option>
+                        <option value="9">September</option>
+                        <option value="10">October</option>
+                        <option value="11">November</option>
+                        <option value="12">December</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5><i class="fas fa-list-check"></i> Report Types</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    <button class="list-group-item list-group-item-action" onclick="generateReport('payslips')">
+                        <i class="fas fa-file-invoice"></i> Individual Payslips
+                    </button>
+                    <button class="list-group-item list-group-item-action" onclick="generateReport('monthly-all-workers')">
+                        <i class="fas fa-users"></i> Monthly All Workers Salary Info
+                    </button>
+                    <button class="list-group-item list-group-item-action" onclick="generateReport('personal-tax')">
+                        <i class="fas fa-calculator"></i> Personal Tax Calculations
+                    </button>
+                    <button class="list-group-item list-group-item-action" onclick="generateReport('annual-summary')">
+                        <i class="fas fa-chart-bar"></i> Annual Summary
+                    </button>
+                    <button class="list-group-item list-group-item-action list-group-item-primary" onclick="generateReport('all')">
+                        <i class="fas fa-rocket"></i> <strong>Generate All Reports</strong>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div id="status-alert" class="alert alert-info" style="display: none;">
+            <div class="d-flex align-items-center">
+                <div class="spinner-border spinner-border-sm me-2" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <span id="status-message">Processing...</span>
+            </div>
+        </div>
+        <div id="result-alert" class="alert" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Generated Files Section -->
+<div class="row mt-4" id="generated-files-section" style="display: none;">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5><i class="fas fa-check-circle"></i> Generated Files</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Filename</th>
+                                <th>Type</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="generated-files-list">
+                        </tbody>
+                    </table>
+                </div>
+                <button class="btn btn-secondary mt-3" onclick="clearGeneratedFiles()">
+                    <i class="fas fa-times"></i> Clear List
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let generatedFiles = [];
+
+function generateReport(type) {
+    const year = document.getElementById('year').value;
+    const month = document.getElementById('month').value;
+    
+    const statusAlert = document.getElementById('status-alert');
+    const resultAlert = document.getElementById('result-alert');
+    const statusMessage = document.getElementById('status-message');
+    
+    // Show loading
+    statusAlert.style.display = 'block';
+    resultAlert.style.display = 'none';
+    statusMessage.textContent = `Generating ${type.replace('-', ' ')}...`;
+    
+    // Make API request
+    fetch(`/api/generate/${type}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ year, month, employee_id: 'all' })
+    })
+    .then(response => response.json())
+    .then(data => {
+        statusAlert.style.display = 'none';
+        
+        if (data.success) {
+            resultAlert.className = 'alert alert-success';
+            resultAlert.innerHTML = `<i class="fas fa-check-circle"></i> ${data.message}`;
+            
+            // Add generated files to the list
+            if (data.file) {
+                addGeneratedFile(data.file, type);
+            } else if (data.files) {
+                data.files.forEach(file => addGeneratedFile(file, type));
+            } else if (data.generated) {
+                // Handle 'all' report type
+                Object.entries(data.generated).forEach(([category, files]) => {
+                    files.forEach(file => addGeneratedFile(file, category));
+                });
+            }
+            
+            // Show generated files section
+            document.getElementById('generated-files-section').style.display = 'block';
+            
+        } else {
+            resultAlert.className = 'alert alert-danger';
+            resultAlert.innerHTML = `<i class="fas fa-exclamation-circle"></i> Error: ${data.message}`;
+        }
+        
+        resultAlert.style.display = 'block';
+        
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            resultAlert.style.display = 'none';
+        }, 5000);
+    })
+    .catch(error => {
+        statusAlert.style.display = 'none';
+        resultAlert.className = 'alert alert-danger';
+        resultAlert.innerHTML = `<i class="fas fa-exclamation-circle"></i> Error: ${error}`;
+        resultAlert.style.display = 'block';
+    });
+}
+
+function addGeneratedFile(filename, type) {
+    // Avoid duplicates
+    if (generatedFiles.includes(filename)) {
+        return;
+    }
+    
+    generatedFiles.push(filename);
+    
+    const tbody = document.getElementById('generated-files-list');
+    const row = tbody.insertRow(0); // Insert at top
+    
+    // Icon based on type
+    let icon = 'fa-file-excel';
+    let badgeColor = 'primary';
+    
+    if (type.includes('payslip')) {
+        icon = 'fa-file-invoice';
+        badgeColor = 'info';
+    } else if (type.includes('annual')) {
+        icon = 'fa-chart-bar';
+        badgeColor = 'warning';
+    }
+    
+    row.innerHTML = `
+        <td>
+            <i class="fas ${icon} text-success"></i> ${filename}
+        </td>
+        <td>
+            <span class="badge bg-${badgeColor}">${type}</span>
+        </td>
+        <td>
+            <a href="/api/download/${filename}" class="btn btn-sm btn-success" download>
+                <i class="fas fa-download"></i> Download
+            </a>
+            <button class="btn btn-sm btn-primary" onclick="viewFile('${filename}')">
+                <i class="fas fa-eye"></i> View Info
+            </button>
+        </td>
+    `;
+    
+    // Add highlight animation
+    row.classList.add('table-success');
+    setTimeout(() => {
+        row.classList.remove('table-success');
+    }, 2000);
+}
+
+function clearGeneratedFiles() {
+    generatedFiles = [];
+    document.getElementById('generated-files-list').innerHTML = '';
+    document.getElementById('generated-files-section').style.display = 'none';
+}
+
+function viewFile(filename) {
+    alert(`File: ${filename}\n\nClick "Download" to save this file to your computer.`);
+}
+
+// Add CSS for animation
+const style = document.createElement('style');
+style.textContent = `
+    .table-success {
+        animation: highlightFade 2s ease-out;
+    }
+    
+    @keyframes highlightFade {
+        0% { background-color: #d1e7dd; }
+        100% { background-color: transparent; }
+    }
+    
+    #generated-files-list tr {
+        transition: background-color 0.3s;
+    }
+    
+    #generated-files-list tr:hover {
+        background-color: #f8f9fa;
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}

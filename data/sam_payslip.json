@@ -1,0 +1,40 @@
+{
+    "employee_id": "01012020-123X",
+    "name": "Sam Sample",
+    "address": "Mechelininkatu 10, 00100 Helsinki",
+    "pay_period_start": "2025-08-01",
+    "pay_period_end": "2025-08-15",
+    "payment_date": "2025-08-29",
+    "bank_details": "IBAN: 1234 5678 9012 3456, BIC: FIHHXXYY",
+    "tax_info": {
+      "tax_card_type": "Perus",
+      "base_tax_rate": 16.50,
+      "additional_tax_rate": 44.00,
+      "income_limit_year": 39800.00,
+      "earnings_period_start": 9585.34
+    },
+    "salary_items": [
+      {"code": "12101", "description": "Regular work", "quantity": 70.00, "rate": 17.00, "total": 1190.00},
+      {"code": "12101_2", "description": "Overtime", "quantity": 2.00, "rate": 17.00, "total": 34.00},
+      {"code": "12102", "description": "50% overtime", "quantity": 2.00, "rate": 8.50, "total": 17.00},
+      {"code": "12107", "description": "Evening supplement", "quantity": 12.00, "rate": 1.41, "total": 16.92}
+    ],
+    "deductions": [
+      {"code": "VÄH", "description": "Swedish tax 30%", "amount": -557.38},
+      {"code": "VÄH", "description": "Swedish tax expense deduction", "amount": -113.42}
+    ],
+    "benefits": [
+      {"code": "MK002", "description": "Travel compensation", "quantity": 1.00, "rate": 600.00, "total": 600.00},
+      {"code": "PVR003", "description": "Foreign per diem", "quantity": 9.00, "rate": 68.00, "total": 612.00}
+    ],
+    "tax_withholding": -132.84,
+    "pension_insurance": -10.96,
+    "health_insurance_daily": 0.84,
+    "tax_free_portion": 612.00,
+    "net_payment": 1655.32,
+    "gross_salary": 1857.92,
+    "year_to_date": {
+      "gross": 9585.34,
+      "tax_free": 3468
+    }
+  }

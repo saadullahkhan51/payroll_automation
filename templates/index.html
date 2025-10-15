@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="jumbotron bg-light p-5 rounded">
+            <h1 class="display-4">Welcome to Payroll Automation</h1>
+            <p class="lead">Automate Swedish tax reporting for construction workers working in Finland and Sweden.</p>
+            <hr class="my-4">
+            <p>Generate individual payslips, monthly summaries, and annual tax reports with just a few clicks.</p>
+            <a class="btn btn-primary btn-lg" href="/generate" role="button">
+                <i class="fas fa-rocket"></i> Get Started
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-file-invoice fa-3x text-primary mb-3"></i>
+                <h5 class="card-title">Individual Payslips</h5>
+                <p class="card-text">Generate payslips for each employee with detailed breakdown.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-table fa-3x text-success mb-3"></i>
+                <h5 class="card-title">Monthly Reports</h5>
+                <p class="card-text">Create monthly summaries and all-workers reports.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-chart-line fa-3x text-warning mb-3"></i>
+                <h5 class="card-title">Annual Summaries</h5>
+                <p class="card-text">Generate annual tax calculations and summaries.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-12">
+        <h3>Quick Stats</h3>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fas fa-users"></i> Employees</h5>
+                        <h2 id="employee-count">-</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fas fa-file-alt"></i> Reports</h5>
+                        <h2 id="report-count">-</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fas fa-calendar"></i> This Month</h5>
+                        <h2 id="month-reports">-</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fas fa-clock"></i> Last Generated</h5>
+                        <h6 id="last-generated">-</h6>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Load stats on page load
+fetch('/api/employees')
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('employee-count').textContent = data.length;
+    });
+</script>
+{% endblock %}
